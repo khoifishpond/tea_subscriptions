@@ -8,13 +8,9 @@ class Api::V1::SubscriptionsController < ApplicationController
     customer = Customer.find(params[:customer_id])
     tea = Tea.find(params[:tea_id])
 
-    subscription = Subscription.create(
-      title: tea.name,
-      price: 4.99,
-      frequency: 2,
-      tea_id: tea.id,
-      customer_id: customer.id
-    )
+    subscription = Subscription.new(subscription_params)
+    subscription.title = tea.name
+    subscription.save
     render json: SubscriptionSerializer.new(subscription), status: :created
   end
 
@@ -22,5 +18,11 @@ class Api::V1::SubscriptionsController < ApplicationController
     subscription = Subscription.find(params[:subscription_id])
     subscription.update(status: 0)
     render json: SubscriptionSerializer.new(subscription)
+  end
+
+  private
+
+  def subscription_params
+    params.permit(:price, :frequency, :tea_id, :customer_id)
   end
 end

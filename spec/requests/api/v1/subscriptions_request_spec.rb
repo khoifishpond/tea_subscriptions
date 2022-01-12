@@ -7,7 +7,9 @@ RSpec.describe 'Subscriptions API' do
 
     post '/api/v1/subscribe', params: {
       customer_id: customer.id,
-      tea_id: tea.id
+      tea_id: tea.id,
+      price: 4.99,
+      frequency: 'monthly'
     }
 
     expect(response).to be_successful
@@ -29,7 +31,7 @@ RSpec.describe 'Subscriptions API' do
     expect(subscription[:data][:attributes]).to have_key(:status)
     expect(subscription[:data][:attributes][:status]).to eq('active').or eq('cancelled')
     expect(subscription[:data][:attributes]).to have_key(:frequency)
-    expect(subscription[:data][:attributes][:frequency]).to be_an(Integer)
+    expect(subscription[:data][:attributes][:frequency]).to be_a(String)
     expect(subscription[:data][:attributes]).to have_key(:tea_id)
     expect(subscription[:data][:attributes][:tea_id]).to be_an(Integer)
     expect(subscription[:data][:attributes]).to have_key(:customer_id)
@@ -97,7 +99,7 @@ RSpec.describe 'Subscriptions API' do
       expect(subscription[:attributes]).to have_key(:status)
       expect(subscription[:attributes][:status]).to eq('active').or eq('cancelled')
       expect(subscription[:attributes]).to have_key(:frequency)
-      expect(subscription[:attributes][:frequency]).to be_an(Integer)
+      expect(subscription[:attributes][:frequency]).to be_a(String)
       expect(subscription[:attributes]).to have_key(:tea_id)
       expect(subscription[:attributes][:tea_id]).to be_an(Integer)
       expect(subscription[:attributes]).to have_key(:customer_id)
