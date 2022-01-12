@@ -106,4 +106,38 @@ RSpec.describe 'Subscriptions API' do
       expect(subscription[:attributes][:customer_id]).to be_an(Integer)
     end
   end
+
+  describe 'Error Handling' do
+    it 'sends an error if a subscription is already cancelled' do
+      customer = create(:customer)
+      tea = create(:tea)
+      subscription = Subscription.create(
+        title: tea.name,
+        price: 4.99,
+        frequency: 2,
+        tea_id: tea.id,
+        customer_id: customer.id
+      )
+      customer.subscriptions.update(status: 0)
+      
+      patch '/api/v1/unsubscribe', params: {
+        subscription_id: subscription.id
+      }
+
+      expect(response).to be_successful
+
+      updated_sub = JSON.parse(response.body, symbolize_names: true)
+      
+      expect(updated_sub).to be_a(Hash)
+      expect(updated_sub).to have_key(:errors)
+      expect(updated_sub[:errors]).to be_an(Array)
+      expect(updated_sub[:errors].first).to be_a(Hash)
+      expect(updated_sub[:errors].first).to have_key(:status)
+      expect(updated_sub[:errors].first[:status]).to eq('Bad Request')
+      expect(updated_sub[:errors].first).to have_key(:message)
+      expect(updated_sub[:errors].first[:message]).to eq('Subscription already cancelled')
+      expect(updated_sub[:errors].first).to have_key(:code)
+      expect(updated_sub[:errors].first[:code]).to eq(400)
+    end
+  end
 end
