@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :teas, only: [:index]
+      resources :subscriptions, only: [:index]
+      post '/subscribe', to: 'subscriptions#create'
+      patch '/unsubscribe', to: 'subscriptions#update'
     end
   end
 end
