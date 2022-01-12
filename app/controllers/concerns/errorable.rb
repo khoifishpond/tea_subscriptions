@@ -1,13 +1,13 @@
 module Errorable
   extend ActiveSupport::Concern
 
-  def error(status, message, code)
+  def error(message)
     {
       'errors': [
         {
-          'status': status,
+          'status': 'Bad Request',
           'message': message,
-          'code': code
+          'code': 400
         }
       ]
     }

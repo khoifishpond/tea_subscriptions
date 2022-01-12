@@ -107,6 +107,28 @@ RSpec.describe 'Subscriptions API' do
     end
   end
 
+  it 'shows a subscription' do
+    customer = create(:customer)
+    tea = create(:tea)
+    Subscription.create(
+      title: tea.name,
+      price: 4.99,
+      frequency: 2,
+      tea_id: tea.id,
+      customer_id: customer.id
+    )
+
+    get '/api/v1/subscription', params: {
+      subscription_id: Subscription.all.first.id
+    }
+
+    expect(response).to be_successful
+
+    subscription = JSON.parse(response.body, symbolize_names: true)
+
+    expect(subscription).to be_a(Hash)
+  end
+
   describe 'Error Handling' do
     it 'sends an error if a subscription is already cancelled' do
       customer = create(:customer)
@@ -126,18 +148,75 @@ RSpec.describe 'Subscriptions API' do
 
       expect(response).to be_successful
 
-      updated_sub = JSON.parse(response.body, symbolize_names: true)
+      error = JSON.parse(response.body, symbolize_names: true)
       
-      expect(updated_sub).to be_a(Hash)
-      expect(updated_sub).to have_key(:errors)
-      expect(updated_sub[:errors]).to be_an(Array)
-      expect(updated_sub[:errors].first).to be_a(Hash)
-      expect(updated_sub[:errors].first).to have_key(:status)
-      expect(updated_sub[:errors].first[:status]).to eq('Bad Request')
-      expect(updated_sub[:errors].first).to have_key(:message)
-      expect(updated_sub[:errors].first[:message]).to eq('Subscription already cancelled')
-      expect(updated_sub[:errors].first).to have_key(:code)
-      expect(updated_sub[:errors].first[:code]).to eq(400)
+      expect(error).to be_a(Hash)
+      expect(error).to have_key(:errors)
+      expect(error[:errors]).to be_an(Array)
+      expect(error[:errors].first).to be_a(Hash)
+      expect(error[:errors].first).to have_key(:status)
+      expect(error[:errors].first[:status]).to eq('Bad Request')
+      expect(error[:errors].first).to have_key(:message)
+      expect(error[:errors].first[:message]).to eq('Subscription already cancelled')
+      expect(error[:errors].first).to have_key(:code)
+      expect(error[:errors].first[:code]).to eq(400)
+    end
+
+    it 'sends an error if no ID is provided to show a subscription' do
+      get '/api/v1/subscription'
+  
+      expect(response).to be_successful
+  
+      error = JSON.parse(response.body, symbolize_names: true)
+  
+      expect(error).to be_a(Hash)
+      expect(error).to have_key(:errors)
+      expect(error[:errors]).to be_an(Array)
+      expect(error[:errors].first).to be_a(Hash)
+      expect(error[:errors].first).to have_key(:status)
+      expect(error[:errors].first[:status]).to eq('Bad Request')
+      expect(error[:errors].first).to have_key(:message)
+      expect(error[:errors].first[:message]).to eq('Subscription ID required')
+      expect(error[:errors].first).to have_key(:code)
+      expect(error[:errors].first[:code]).to eq(400)
+    end
+
+    it 'sends an error if no ID is provided to unsubscribe' do
+      patch '/api/v1/unsubscribe'
+  
+      expect(response).to be_successful
+  
+      error = JSON.parse(response.body, symbolize_names: true)
+  
+      expect(error).to be_a(Hash)
+      expect(error).to have_key(:errors)
+      expect(error[:errors]).to be_an(Array)
+      expect(error[:errors].first).to be_a(Hash)
+      expect(error[:errors].first).to have_key(:status)
+      expect(error[:errors].first[:status]).to eq('Bad Request')
+      expect(error[:errors].first).to have_key(:message)
+      expect(error[:errors].first[:message]).to eq('Subscription ID required')
+      expect(error[:errors].first).to have_key(:code)
+      expect(error[:errors].first[:code]).to eq(400)
+    end
+
+    it 'sends an error if no ID is provided to subscribe' do
+      post '/api/v1/subscribe'
+  
+      expect(response).to be_successful
+  
+      error = JSON.parse(response.body, symbolize_names: true)
+  
+      expect(error).to be_a(Hash)
+      expect(error).to have_key(:errors)
+      expect(error[:errors]).to be_an(Array)
+      expect(error[:errors].first).to be_a(Hash)
+      expect(error[:errors].first).to have_key(:status)
+      expect(error[:errors].first[:status]).to eq('Bad Request')
+      expect(error[:errors].first).to have_key(:message)
+      expect(error[:errors].first[:message]).to eq('Customer and Tea ID required')
+      expect(error[:errors].first).to have_key(:code)
+      expect(error[:errors].first[:code]).to eq(400)
     end
   end
 end
