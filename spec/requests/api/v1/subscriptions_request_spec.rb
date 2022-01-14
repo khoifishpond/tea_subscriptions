@@ -162,6 +162,35 @@ RSpec.describe 'Subscriptions API' do
       expect(error[:errors].first[:code]).to eq(400)
     end
 
+    it 'sends an error if no customer ID is provided' do
+      customer = create(:customer)
+      tea = create(:tea)
+      subscription = Subscription.create(
+        title: tea.name,
+        price: 4.99,
+        frequency: 'bi-weekly',
+        tea_id: tea.id,
+        customer_id: customer.id
+      )
+      get "/api/v1/customers/2/subscriptions", params: {
+        customer_Id: 2
+      }
+  
+      expect(response).to be_successful
+  
+      error = JSON.parse(response.body, symbolize_names: true)
+      expect(error).to be_a(Hash)
+      expect(error).to have_key(:errors)
+      expect(error[:errors]).to be_an(Array)
+      expect(error[:errors].first).to be_a(Hash)
+      expect(error[:errors].first).to have_key(:status)
+      expect(error[:errors].first[:status]).to eq('Bad Request')
+      expect(error[:errors].first).to have_key(:message)
+      expect(error[:errors].first[:message]).to eq('Customer does not exist')
+      expect(error[:errors].first).to have_key(:code)
+      expect(error[:errors].first[:code]).to eq(400)
+    end
+
     it 'sends an error if no ID is provided to show a subscription' do
       customer = create(:customer)
       tea = create(:tea)
