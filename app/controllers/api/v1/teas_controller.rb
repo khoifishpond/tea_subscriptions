@@ -4,11 +4,11 @@ class Api::V1::TeasController < ApplicationController
   end
 
   def show
-    if params[:tea_id].nil?
-      render json: error('Tea ID required')
-    else
-      tea = Tea.find(params[:tea_id])
+    if Tea.exists?(params[:id])
+      tea = Tea.find(params[:id])
       render json: TeaSerializer.new(tea)
+    else
+      render json: error('Tea ID does not exist')
     end
   end
 end

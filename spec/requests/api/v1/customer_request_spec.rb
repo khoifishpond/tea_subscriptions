@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-describe 'Teas API' do
-  it 'sends a list of teas' do
+describe 'Cutomers API' do
+  it 'sends a list of customers' do
     create_list(:customer, 3)
 
-    get '/api/v1/customers'
+    get api_v1_customers_path
 
     expect(response).to be_successful
 
@@ -24,11 +24,9 @@ describe 'Teas API' do
   end
 
   it 'shows one customer' do
-    create_list(:customer, 3)
+    customers = create_list(:customer, 3)
 
-    get '/api/v1/customer', params: {
-      customer_id: Customer.first.id
-    }
+    get api_v1_customer_path(customers.first.id)
 
     expect(response).to be_successful
 
@@ -52,8 +50,8 @@ describe 'Teas API' do
   end
 
   describe 'Error Handling' do
-    it 'sends an error if no ID is provided' do
-      get '/api/v1/customer'
+    it 'sends an error if the ID does not exist' do
+      get api_v1_customer_path(100)
 
       expect(response).to be_successful
 
@@ -66,7 +64,7 @@ describe 'Teas API' do
       expect(error[:errors].first).to have_key(:status)
       expect(error[:errors].first[:status]).to eq('Bad Request')
       expect(error[:errors].first).to have_key(:message)
-      expect(error[:errors].first[:message]).to eq('Customer ID required')
+      expect(error[:errors].first[:message]).to eq('Customer ID does not exist')
       expect(error[:errors].first).to have_key(:code)
       expect(error[:errors].first[:code]).to eq(400)
     end

@@ -4,7 +4,7 @@ describe 'Teas API' do
   it 'sends a list of teas' do
     create_list(:tea, 3)
 
-    get '/api/v1/teas'
+    get api_v1_teas_path
 
     expect(response).to be_successful
 
@@ -24,11 +24,9 @@ describe 'Teas API' do
   end
 
   it 'shows one tea' do
-    create_list(:tea, 3)
+    teas = create_list(:tea, 3)
 
-    get '/api/v1/tea', params: {
-      tea_id: Tea.first.id
-    }
+    get api_v1_tea_path(teas.first.id)
 
     expect(response).to be_successful
 
@@ -52,8 +50,8 @@ describe 'Teas API' do
   end
 
   describe 'Error Handling' do
-    it 'sends an error if no ID is provided' do
-      get '/api/v1/tea'
+    it 'sends an error if the ID does not exist' do
+      get api_v1_tea_path(100)
 
       expect(response).to be_successful
 
@@ -66,7 +64,7 @@ describe 'Teas API' do
       expect(error[:errors].first).to have_key(:status)
       expect(error[:errors].first[:status]).to eq('Bad Request')
       expect(error[:errors].first).to have_key(:message)
-      expect(error[:errors].first[:message]).to eq('Tea ID required')
+      expect(error[:errors].first[:message]).to eq('Tea ID does not exist')
       expect(error[:errors].first).to have_key(:code)
       expect(error[:errors].first[:code]).to eq(400)
     end
