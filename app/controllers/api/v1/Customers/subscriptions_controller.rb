@@ -27,7 +27,7 @@ class Api::V1::Customers::SubscriptionsController < ApplicationController
       subscription.save
       render json: SubscriptionSerializer.new(subscription), status: :created
     else
-      render json: error('Customer and Tea ID does not exist')
+      render json: error('Customer or Tea ID does not exist')
     end
   end
 

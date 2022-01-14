@@ -186,7 +186,7 @@ RSpec.describe 'Subscriptions API' do
       expect(error[:errors].first).to have_key(:status)
       expect(error[:errors].first[:status]).to eq('Bad Request')
       expect(error[:errors].first).to have_key(:message)
-      expect(error[:errors].first[:message]).to eq('Subscription does not exist')
+      expect(error[:errors].first[:message]).to eq('Customer orSubscription does not exist')
       expect(error[:errors].first).to have_key(:code)
       expect(error[:errors].first[:code]).to eq(400)
     end
