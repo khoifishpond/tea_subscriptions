@@ -13,10 +13,4 @@ class Subscription < ApplicationRecord
     cancelled: 0,
     active: 1
   }
-
-  enum frequency: {
-    bi_weekly: 0,
-    monthly: 1,
-    quarterly: 2
-  }
 end

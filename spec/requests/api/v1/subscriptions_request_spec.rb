@@ -5,11 +5,11 @@ RSpec.describe 'Subscriptions API' do
     customer = create(:customer)
     tea = create(:tea)
 
-    post '/api/v1/subscribe', params: {
+    post "/api/v1/customers/#{customer.id}/subscriptions/#{tea.id}", params: {
       customer_id: customer.id,
       tea_id: tea.id,
       price: 4.99,
-      frequency: 'monthly'
+      frequency: 'bi-weekly'
     }
 
     expect(response).to be_successful
@@ -44,12 +44,12 @@ RSpec.describe 'Subscriptions API' do
     subscription = Subscription.create(
       title: tea.name,
       price: 4.99,
-      frequency: 2,
+      frequency: 'bi-weekly',
       tea_id: tea.id,
       customer_id: customer.id
     )
     
-    patch '/api/v1/unsubscribe', params: {
+    patch "/api/v1/customers/#{customer.id}/subscriptions/#{subscription.id}", params: {
       subscription_id: subscription.id
     }
     updated_sub = JSON.parse(response.body, symbolize_names: true)
@@ -65,14 +65,14 @@ RSpec.describe 'Subscriptions API' do
       Subscription.create(
         title: tea.name,
         price: 4.99,
-        frequency: 2,
+        frequency: 'bi-weekly',
         tea_id: tea.id,
         customer_id: customer.id
       )
     end
     customer.subscriptions[1].update(status: 0)
 
-    get '/api/v1/subscriptions', params: {
+    get "/api/v1/customers/#{customer.id}/subscriptions", params: {
       customer_id: customer.id
     }
 
@@ -110,16 +110,16 @@ RSpec.describe 'Subscriptions API' do
   it 'shows a subscription' do
     customer = create(:customer)
     tea = create(:tea)
-    Subscription.create(
+    subscription = Subscription.create(
       title: tea.name,
       price: 4.99,
-      frequency: 2,
+      frequency: 'bi-weekly',
       tea_id: tea.id,
       customer_id: customer.id
     )
 
-    get '/api/v1/subscription', params: {
-      subscription_id: Subscription.all.first.id
+    get "/api/v1/customers/#{customer.id}/subscriptions/#{subscription.id}", params: {
+      subscription_id: subscription.id
     }
 
     expect(response).to be_successful
@@ -136,13 +136,13 @@ RSpec.describe 'Subscriptions API' do
       subscription = Subscription.create(
         title: tea.name,
         price: 4.99,
-        frequency: 2,
+        frequency: 'bi-weekly',
         tea_id: tea.id,
         customer_id: customer.id
       )
       customer.subscriptions.update(status: 0)
       
-      patch '/api/v1/unsubscribe', params: {
+      patch "/api/v1/customers/#{customer.id}/subscriptions/#{subscription.id}", params: {
         subscription_id: subscription.id
       }
 
@@ -163,12 +163,22 @@ RSpec.describe 'Subscriptions API' do
     end
 
     it 'sends an error if no ID is provided to show a subscription' do
-      get '/api/v1/subscription'
+      customer = create(:customer)
+      tea = create(:tea)
+      subscription = Subscription.create(
+        title: tea.name,
+        price: 4.99,
+        frequency: 'bi-weekly',
+        tea_id: tea.id,
+        customer_id: customer.id
+      )
+      get "/api/v1/customers/#{customer.id}/subscriptions/99999", params: {
+        subscription_id: 99999
+      }
   
       expect(response).to be_successful
   
       error = JSON.parse(response.body, symbolize_names: true)
-  
       expect(error).to be_a(Hash)
       expect(error).to have_key(:errors)
       expect(error[:errors]).to be_an(Array)
@@ -176,13 +186,21 @@ RSpec.describe 'Subscriptions API' do
       expect(error[:errors].first).to have_key(:status)
       expect(error[:errors].first[:status]).to eq('Bad Request')
       expect(error[:errors].first).to have_key(:message)
-      expect(error[:errors].first[:message]).to eq('Subscription ID required')
+      expect(error[:errors].first[:message]).to eq('Customer orSubscription does not exist')
       expect(error[:errors].first).to have_key(:code)
       expect(error[:errors].first[:code]).to eq(400)
     end
 
     it 'sends an error if no ID is provided to unsubscribe' do
-      patch '/api/v1/unsubscribe'
+      customer = create(:customer)
+      subscription = Subscription.create(
+        title: 'Tea Name',
+        price: 4.99,
+        frequency: 'bi-weekly',
+        tea_id: 2,
+        customer_id: customer.id
+      )
+      patch "/api/v1/customers/#{customer.id}/subscriptions/2"
   
       expect(response).to be_successful
   
@@ -195,13 +213,15 @@ RSpec.describe 'Subscriptions API' do
       expect(error[:errors].first).to have_key(:status)
       expect(error[:errors].first[:status]).to eq('Bad Request')
       expect(error[:errors].first).to have_key(:message)
-      expect(error[:errors].first[:message]).to eq('Subscription ID required')
+      expect(error[:errors].first[:message]).to eq('Subscription does not exist')
       expect(error[:errors].first).to have_key(:code)
       expect(error[:errors].first[:code]).to eq(400)
     end
 
     it 'sends an error if no ID is provided to subscribe' do
-      post '/api/v1/subscribe'
+      customer = create(:customer)
+      # tea = create(:tea)
+      post "/api/v1/customers/#{customer.id}/subscriptions/2"
   
       expect(response).to be_successful
   
@@ -214,7 +234,7 @@ RSpec.describe 'Subscriptions API' do
       expect(error[:errors].first).to have_key(:status)
       expect(error[:errors].first[:status]).to eq('Bad Request')
       expect(error[:errors].first).to have_key(:message)
-      expect(error[:errors].first[:message]).to eq('Customer and Tea ID required')
+      expect(error[:errors].first[:message]).to eq('Customer or Tea ID does not exist')
       expect(error[:errors].first).to have_key(:code)
       expect(error[:errors].first[:code]).to eq(400)
     end
